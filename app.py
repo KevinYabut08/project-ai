@@ -1,25 +1,44 @@
-from flask import Flask, request, jsonify, render_template
-import openai  # Replace with your AI library
+import nltk
+from nltk.chat.util import Chat, reflections
 
-app = Flask(__name__)
+# Predefined conversation pairs
+pairs = [
+    ["hello|hi|hey", ["Hello!", "Hi there!", "Hey!"]],
+    ["how are you?", ["I'm good, how about you?", "I'm fine, thank you!"]],
+    ["what is your name?", ["I'm Chatbot, your AI assistant."]],
+    ["bye|goodbye", ["Goodbye!", "See you later!"]],
+]
 
-# Replace with your OpenAI API key
-openai.api_key = "your-openai-api-key"
+# Reflections for personal pronouns
+reflections = {
+    "i am": "you are",
+    "i was": "you were",
+    "i": "you",
+    "me": "you",
+    "my": "your",
+    "you are": "I am",
+    "you were": "I was",
+    "your": "my",
+    "yours": "mine",
+    "you": "me",
+    "me": "you"
+}
 
-@app.route('/')
-def home():
-    return render_template('index.html')  # HTML file for the frontend
+# Create chatbot instance
+chatbot = Chat(pairs, reflections)
 
-@app.route('/api/chat', methods=['POST'])
-def chat():
-    user_input = request.json.get('message')
-    # Example using OpenAI GPT
-    response = openai.Completion.create(
-        engine="text-davinci-003",
-        prompt=user_input,
-        max_tokens=100
-    )
-    return jsonify({'response': response['choices'][0]['text'].strip()})
+# Start conversation
+def chatbot_interface():
+    print("Chatbot: Hello! Type 'quit' to exit.")
+    while True:
+        user_input = input("You: ").lower()
+        if user_input == "quit":
+            print("Chatbot: Goodbye!")
+            break
+        response = chatbot.respond(user_input)
+        if response:
+            print(f"Chatbot: {response}")
+        else:
+            print("Chatbot: I'm not sure how to respond to that.")
 
-if __name__ == '__main__':
-    app.run(debug=True)
+chatbot_interface()
